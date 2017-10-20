@@ -1,6 +1,7 @@
 # PHP Configuration
 
 Loads your application's configuration from PHP, YAML or XML files, and stores it in a cache file for performance.
+
 Uses the Symfony Config component.
 
 ## Installation
@@ -8,7 +9,7 @@ Uses the Symfony Config component.
 $ composer require awurth/config
 ```
 
-If you want to be able to load YAML files, you have to install the Symfony YAML component:
+If you want to be able to load YAML files, you have to install the Symfony YAML component too:
 ``` bash
 $ composer require symfony/yaml
 ```
@@ -16,8 +17,8 @@ $ composer require symfony/yaml
 ## Usage
 ### Load without cache
 ``` php
-// config.php
 <?php
+// config.php
 
 return [
     'database' => [
@@ -62,9 +63,9 @@ $config = $loader->load('path/to/config', 'path/to/cache.php', $debug);
 ```
 **The cache file should not be versioned**, especially if you store your database credentials in it.
 
-If the third parameter ($debug) is set to `true`, the loader will parse the configuration files and regenerate the cache every time you edit a configuration file (including imports).
+If the third parameter (`$debug`) is set to `true`, the loader will parse the configuration files and regenerate the cache every time you edit a configuration file (including imports).
 
-If set to `false` (in production), the loader will read the cache file directly if it exists or generate it if not. The configuration won't be reloaded if you modify configuration files, so if you want to reload the cache, you can delete the cache file or enter in debug mode.
+If set to `false` (in production), the loader will read the cache file directly if it exists or generate it if not. The configuration won't be reloaded if you modify configuration files, so if you want to reload the cache, you have to delete the cache file or enter in debug mode.
 
 ### Import files from the configuration
 ``` yaml
@@ -77,8 +78,8 @@ database: ...
 ```
 
 ``` php
-// config.dev.php
 <?php
+// config.dev.php
 
 return [
     'imports' => [
@@ -126,7 +127,7 @@ $loader = new AWurth\Config\ConfigurationLoader([
     'your_custom_param' => 'your_custom_value'
 ]);
 
-$config = $loader->load(__DIR__.'/parameters.yml');
+$config = $loader->load(__DIR__.'/config.yml');
 
 // Result:
 $config = [
@@ -159,6 +160,7 @@ monolog:
 
 # TODO
 - XML Loader
+- Custom loaders
 - Custom parameters key
 - Custom imports key
 - Tests
