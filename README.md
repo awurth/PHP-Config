@@ -115,6 +115,35 @@ return [
 }
 ```
 
+#### Single import
+``` yaml
+imports: 'file.yml'
+```
+
+#### Named imports
+##### Without named import
+``` yaml
+# config.yml
+import:
+    - security.yml
+
+# security.yml
+security:
+    login_path: /login
+    logout_path: /logout
+```
+
+##### With named import
+``` yaml
+# config.yml
+import:
+    security: security.yml
+
+# security.yml
+login_path: /login
+logout_path: /logout
+```
+
 ### Using parameters
 ``` yaml
 # parameters.yml
@@ -188,5 +217,4 @@ monolog:
 - Custom imports key
 - Custom imports base dir
 - Non-string parameters
-- Named imports
 - Tests

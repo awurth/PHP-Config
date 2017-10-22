@@ -173,8 +173,8 @@ class ConfigurationLoader
             if (is_string($imports)) {
                 $this->parseFile($directory.DIRECTORY_SEPARATOR.$imports);
             } elseif (is_array($imports)) {
-                foreach ($imports as $import) {
-                    $this->parseFile($directory.DIRECTORY_SEPARATOR.$import);
+                foreach ($imports as $key => $file) {
+                    $this->parseFile($directory.DIRECTORY_SEPARATOR.$file, is_string($key) ? $key : null);
                 }
             }
         }
@@ -210,15 +210,16 @@ class ConfigurationLoader
      * Parses a configuration file.
      *
      * @param string $file
+     * @param string $key
      */
-    protected function parseFile($file)
+    protected function parseFile($file, $key = null)
     {
         $values = $this->loader->load($file);
 
         if ($values) {
             $this->loadImports($values, dirname($file));
 
-            $this->configurations[] = $values;
+            $this->configurations[] = null !== $key ? [$key => $values] : $values;
             $this->resources[] = new FileResource($file);
         }
     }
