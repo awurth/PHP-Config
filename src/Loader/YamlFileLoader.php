@@ -24,9 +24,11 @@ class YamlFileLoader extends FileLoader
     /**
      * {@inheritdoc}
      */
-    public function load($resource, $type = null)
+    public function load($file, $type = null)
     {
-        return Yaml::parse(file_get_contents($resource), Yaml::PARSE_CONSTANT | Yaml::PARSE_DATETIME | Yaml::PARSE_EXCEPTION_ON_INVALID_TYPE);
+        $path = $this->locator->locate($file);
+
+        return Yaml::parse(file_get_contents($path), Yaml::PARSE_CONSTANT | Yaml::PARSE_DATETIME | Yaml::PARSE_EXCEPTION_ON_INVALID_TYPE);
     }
 
     /**
