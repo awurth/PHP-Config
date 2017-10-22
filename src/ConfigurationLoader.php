@@ -168,13 +168,18 @@ class ConfigurationLoader
      */
     protected function loadImports(&$values, $directory)
     {
-        if (isset($values['imports']) && is_array($values['imports'])) {
-            foreach ($values['imports'] as $import) {
-                $this->parseFile($directory.DIRECTORY_SEPARATOR.$import);
+        if (isset($values['imports'])) {
+            $imports = $values['imports'];
+            if (is_string($imports)) {
+                $this->parseFile($directory.DIRECTORY_SEPARATOR.$imports);
+            } elseif (is_array($imports)) {
+                foreach ($imports as $import) {
+                    $this->parseFile($directory.DIRECTORY_SEPARATOR.$import);
+                }
             }
-
-            unset($values['imports']);
         }
+
+        unset($values['imports']);
     }
 
     /**
