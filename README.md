@@ -1,6 +1,6 @@
 # PHP Configuration
 
-Loads your application's configuration from PHP, YAML or XML files, and stores it in a cache file for performance.
+Loads your application's configuration from PHP, YAML, XML or JSON files, and stores it in a cache file for performance.
 
 Uses the Symfony Config component.
 
@@ -17,7 +17,6 @@ $ composer require symfony/yaml
 ## Usage
 ### Load without cache
 ``` php
-<?php
 // config.php
 
 return [
@@ -37,14 +36,26 @@ database:
     password: pass
 ```
 
+``` json
+// config.json
+{
+    "database": {
+        "name": "database_name",
+        "user": "root",
+        "password": "pass"
+    }
+}
+```
+
 ``` php
 $loader = new AWurth\Config\ConfigurationLoader();
 
 $phpConfig = $loader->load('path/to/config.php');
 $yamlConfig = $loader->load('path/to/config.yml');
+$jsonConfig = $loader->load('path/to/config.json');
 
 // Result:
-$phpConfig = $yamlConfig = [
+$phpConfig = $yamlConfig = $jsonConfig = [
     'database' => [
         'name' => 'database_name',
         'user' => 'root',
@@ -78,18 +89,30 @@ database: ...
 ```
 
 ``` php
-<?php
 // config.dev.php
 
 return [
     'imports' => [
-        'parameters.yml', // You can import YAML (or XML) files from a PHP configuration file
+        'parameters.yml', // You can import YAML / JSON / XML files from a PHP configuration file
         'config.php'
     ],
     'database' => [
         ...
     ]
 ];
+```
+
+``` json
+// config.dev.json
+{
+    "imports": [
+        'parameters.yml',
+        'config.json'
+    ],
+    "database": {
+        ...
+    }
+}
 ```
 
 ### Using parameters
@@ -163,4 +186,7 @@ monolog:
 - Custom loaders
 - Custom parameters key
 - Custom imports key
+- Custom imports base dir
+- Non-string parameters
+- Named imports
 - Tests

@@ -11,6 +11,7 @@
 
 namespace AWurth\Config;
 
+use AWurth\Config\Loader\JsonFileLoader;
 use AWurth\Config\Loader\PhpFileLoader;
 use AWurth\Config\Loader\YamlFileLoader;
 use Symfony\Component\Config\ConfigCache;
@@ -150,8 +151,9 @@ class ConfigurationLoader
             $locator = new FileLocator();
 
             $loaderResolver = new LoaderResolver([
-                new YamlFileLoader($locator),
-                new PhpFileLoader($locator)
+                new JsonFileLoader($locator),
+                new PhpFileLoader($locator),
+                new YamlFileLoader($locator)
             ]);
 
             $this->loader = new DelegatingLoader($loaderResolver);
@@ -161,7 +163,7 @@ class ConfigurationLoader
     /**
      * Loads file imports recursively.
      *
-     * @param mixed  $values
+     * @param array  $values
      * @param string $directory
      */
     protected function loadImports(&$values, $directory)
