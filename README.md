@@ -106,8 +106,8 @@ return [
 // config.dev.json
 {
     "imports": [
-        'parameters.yml',
-        'config.json'
+        "parameters.yml",
+        "config.json"
     ],
     "database": {
         ...
