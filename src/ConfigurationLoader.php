@@ -39,6 +39,11 @@ class ConfigurationLoader
     protected $loader;
 
     /**
+     * @var Options
+     */
+    protected $options;
+
+    /**
      * @var array
      */
     protected $parameters;
@@ -51,13 +56,22 @@ class ConfigurationLoader
     /**
      * Constructor.
      *
-     * @param array $parameters
+     * @param Options|array $options
+     * @param array         $parameters
      */
-    public function __construct(array $parameters = [])
+    public function __construct($options = [], array $parameters = [])
     {
         $this->configurations = [];
         $this->resources = [];
         $this->parameters = $parameters;
+
+        if ($options instanceof Options) {
+            $this->options = $options;
+        } elseif (is_array($options)) {
+            $this->options = new Options($options);
+        } else {
+            $this->options = new Options();
+        }
     }
 
     /**
@@ -67,7 +81,7 @@ class ConfigurationLoader
      * @param string $cachePath
      * @param bool   $debug
      *
-     * @return array|mixed
+     * @return array
      */
     public function load($file, $cachePath = null, $debug = false)
     {
@@ -100,11 +114,14 @@ class ConfigurationLoader
         $this->parseFile($file);
 
         $configuration = $this->mergeConfiguration();
-        if (isset($configuration['parameters'])) {
-            $this->mergeParameters($configuration['parameters']);
-        }
 
-        $this->parseParameters($configuration);
+        if ($this->options->areParametersEnabled()) {
+            if (isset($configuration[$this->options->getParametersKey()])) {
+                $this->mergeParameters($configuration[$this->options->getParametersKey()]);
+            }
+
+            $this->parseParameters($configuration);
+        }
 
         return $configuration;
     }
@@ -127,6 +144,26 @@ class ConfigurationLoader
     public function setParameters(array $parameters)
     {
         $this->parameters = $parameters;
+    }
+
+    /**
+     * Gets the options.
+     *
+     * @return Options
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * Sets the options.
+     *
+     * @param Options $options
+     */
+    public function setOptions(Options $options)
+    {
+        $this->options = $options;
     }
 
     /**
@@ -168,8 +205,8 @@ class ConfigurationLoader
      */
     protected function loadImports(&$values, $directory)
     {
-        if (isset($values['imports'])) {
-            $imports = $values['imports'];
+        if (isset($values[$this->options->getImportsKey()])) {
+            $imports = $values[$this->options->getImportsKey()];
             if (is_string($imports)) {
                 $this->parseFile($directory.DIRECTORY_SEPARATOR.$imports);
             } elseif (is_array($imports)) {
@@ -179,7 +216,7 @@ class ConfigurationLoader
             }
         }
 
-        unset($values['imports']);
+        unset($values[$this->options->getImportsKey()]);
     }
 
     /**
@@ -216,8 +253,10 @@ class ConfigurationLoader
     {
         $values = $this->loader->load($file);
 
-        if ($values) {
-            $this->loadImports($values, dirname($file));
+        if (!empty($values)) {
+            if ($this->options->areImportsEnabled()) {
+                $this->loadImports($values, dirname($file));
+            }
 
             $this->configurations[] = null !== $key ? [$key => $values] : $values;
             $this->resources[] = new FileResource($file);
@@ -245,7 +284,7 @@ class ConfigurationLoader
      *
      * @param string $file
      *
-     * @return mixed
+     * @return array
      */
     private static function requireFile($file)
     {

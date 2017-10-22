@@ -78,6 +78,8 @@ If the third parameter (`$debug`) is set to `true`, the loader will parse the co
 If set to `false` (in production), the loader will read the cache file directly if it exists or generate it if not. The configuration won't be reloaded if you modify configuration files, so if you want to reload the cache, you have to delete the cache file.
 
 ## Import files from the configuration
+You can import other files into a configuration file with the `imports` key. The `imports` array will be removed from the final configuration.
+
 ``` yaml
 # config.dev.yml
 imports:
@@ -120,7 +122,7 @@ imports: 'file.yml'
 ##### Without named import
 ``` yaml
 # config.yml
-import:
+imports:
     - security.yml
 
 # security.yml
@@ -132,7 +134,7 @@ security:
 ##### With named import
 ``` yaml
 # config.yml
-import:
+imports:
     security: security.yml
 
 # security.yml
@@ -169,7 +171,7 @@ your_custom_config: '%your_custom_param%'
 ```
 
 ``` php
-$loader = new AWurth\Config\ConfigurationLoader([
+$loader = new AWurth\Config\ConfigurationLoader([], [
     'root_dir' => '/path/to/project/root',
     'environment' => 'dev',
     'your_custom_param' => 'your_custom_value'
@@ -206,11 +208,51 @@ monolog:
     level: !php/const:Monolog\Logger::ERROR
 ```
 
+## Options
+#### Imports and parameters keys
+``` php
+$loader = new AWurth\Config\ConfigurationLoader([
+    'imports_key' => 'require',
+    'parameters_key' => 'replacements'
+]);
+
+$config = $loader->load(__DIR__.'/config.yml');
+```
+
+``` yaml
+# config.yml
+require: # Does the same as 'imports:'
+    - 'parameters.yml'
+    - 'security.yml'
+
+replacements: # Does the same as 'parameters:'
+    locale: en
+
+parameters:
+    database_user: root
+
+translator:
+    fallback: '%locale%' # Will be replaced by 'en'
+
+database:
+    user: '%database_user%' # Will be replaced by null
+```
+
+#### Disable imports / parameters
+Imports and parameters features can be disabled by setting the `enable_imports` or `enable_parameters` options to `false`.
+If your configuration contains an `imports` key, it won't be removed from the final configuration.
+Nonexistent placeholders won't be replaced by `null`.
+
+``` php
+$loader = new AWurth\Config\ConfigurationLoader([
+    'enable_imports' => false,
+    'enable_parameters' => false
+]);
+```
+
 # TODO
 - XML Loader
 - Custom loaders
-- Custom parameters key
-- Custom imports key
 - Custom imports base dir
 - Non-string parameters
 - Tests
