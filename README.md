@@ -65,7 +65,7 @@ $config = $loader->load('path/to/config', 'path/to/cache.php', $debug);
 
 If the third parameter (`$debug`) is set to `true`, the loader will parse the configuration files and regenerate the cache every time you edit a configuration file (including imports).
 
-If set to `false` (in production), the loader will read the cache file directly if it exists or generate it if not. The configuration won't be reloaded if you modify configuration files, so if you want to reload the cache, you have to delete the cache file or enter in debug mode.
+If set to `false` (in production), the loader will read the cache file directly if it exists or generate it if not. The configuration won't be reloaded if you modify configuration files, so if you want to reload the cache, you have to delete the cache file.
 
 ### Import files from the configuration
 ``` yaml
