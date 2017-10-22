@@ -18,7 +18,6 @@ $ composer require symfony/yaml
 ### Load without cache
 ``` php
 // config.php
-
 return [
     'database' => [
         'name' => 'database_name',
@@ -78,7 +77,7 @@ If the third parameter (`$debug`) is set to `true`, the loader will parse the co
 
 If set to `false` (in production), the loader will read the cache file directly if it exists or generate it if not. The configuration won't be reloaded if you modify configuration files, so if you want to reload the cache, you have to delete the cache file.
 
-### Import files from the configuration
+## Import files from the configuration
 ``` yaml
 # config.dev.yml
 imports:
@@ -90,7 +89,6 @@ database: ...
 
 ``` php
 // config.dev.php
-
 return [
     'imports' => [
         'parameters.yml', // You can import YAML / JSON / XML files from a PHP configuration file
@@ -109,18 +107,16 @@ return [
         "parameters.yml",
         "config.json"
     ],
-    "database": {
-        ...
-    }
+    "database": {}
 }
 ```
 
-#### Single import
+### Single import
 ``` yaml
 imports: 'file.yml'
 ```
 
-#### Named imports
+### Named imports
 ##### Without named import
 ``` yaml
 # config.yml
@@ -144,7 +140,7 @@ login_path: /login
 logout_path: /logout
 ```
 
-### Using parameters
+## Using parameters
 ``` yaml
 # parameters.yml
 parameters:
@@ -202,7 +198,7 @@ $config = [
 ];
 ```
 
-### Using PHP constants in YAML files
+## Using PHP constants in YAML files
 You can use simple PHP constant (like `__DIR__`) or class constants (like `Monolog\Logger::DEBUG`) by using the YAML tag `!php/const:`
 
 ``` yaml
