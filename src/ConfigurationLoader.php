@@ -120,7 +120,7 @@ class ConfigurationLoader
                 $this->mergeParameters($configuration[$this->options->getParametersKey()]);
             }
 
-            $this->parseParameters($configuration);
+            $this->replacePlaceholders($configuration);
         }
 
         return $configuration;
@@ -198,20 +198,63 @@ class ConfigurationLoader
     }
 
     /**
+     * Returns whether the file path is an absolute path.
+     *
+     * @param string $file
+     *
+     * @return bool
+     */
+    protected function isAbsolutePath($file)
+    {
+        if ('/' === $file[0] || '\\' === $file[0]
+            || (strlen($file) > 3 && ctype_alpha($file[0])
+                && ':' === $file[1]
+                && ('\\' === $file[2] || '/' === $file[2])
+            )
+            || null !== parse_url($file, PHP_URL_SCHEME)
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Loads an imported file.
+     *
+     * @param string      $path
+     * @param string      $originalFile
+     * @param string|null $key
+     */
+    protected function loadImport($path, $originalFile, $key = null)
+    {
+        if ($this->options->areParametersEnabled()) {
+            $this->replaceStringPlaceholders($path);
+        }
+
+        if ($this->isAbsolutePath($path) && file_exists($path)) {
+            $this->parseFile($path, $key);
+        } else {
+            $this->parseFile(dirname($originalFile).DIRECTORY_SEPARATOR.$path, $key);
+        }
+    }
+
+    /**
      * Loads file imports recursively.
      *
-     * @param array  $values
-     * @param string $directory
+     * @param array       $values
+     * @param string|null $originalFile
      */
-    protected function loadImports(&$values, $directory)
+    protected function loadImports(&$values, $originalFile = null)
     {
         if (isset($values[$this->options->getImportsKey()])) {
             $imports = $values[$this->options->getImportsKey()];
+
             if (is_string($imports)) {
-                $this->parseFile($directory.DIRECTORY_SEPARATOR.$imports);
+                $this->loadImport($imports, $originalFile);
             } elseif (is_array($imports)) {
                 foreach ($imports as $key => $file) {
-                    $this->parseFile($directory.DIRECTORY_SEPARATOR.$file, is_string($key) ? $key : null);
+                    $this->loadImport($file, $originalFile, is_string($key) ? $key : null);
                 }
             }
         }
@@ -254,8 +297,13 @@ class ConfigurationLoader
         $values = $this->loader->load($file);
 
         if (!empty($values)) {
+            if ($this->options->areParametersEnabled() && isset($values[$this->options->getParametersKey()])) {
+                $this->replacePlaceholders($values[$this->options->getParametersKey()]);
+                $this->mergeParameters($values[$this->options->getParametersKey()]);
+            }
+
             if ($this->options->areImportsEnabled()) {
-                $this->loadImports($values, dirname($file));
+                $this->loadImports($values, $file);
             }
 
             $this->configurations[] = null !== $key ? [$key => $values] : $values;
@@ -264,19 +312,27 @@ class ConfigurationLoader
     }
 
     /**
-     * Parses the configuration and replaces placeholders with parameters values.
+     * Parses the configuration and replaces placeholders with the corresponding parameters values.
      *
      * @param array $configuration
      */
-    protected function parseParameters(array &$configuration)
+    protected function replacePlaceholders(array &$configuration)
     {
-        array_walk_recursive($configuration, function (&$item) {
-            if (is_string($item)) {
-                $item = preg_replace_callback('/%([0-9A-Za-z._-]+)%/', function ($matches) {
-                    return isset($this->parameters[$matches[1]]) ? $this->parameters[$matches[1]] : null;
-                }, $item);
-            }
-        });
+        array_walk_recursive($configuration, [$this, 'replaceStringPlaceholders']);
+    }
+
+    /**
+     * Replaces configuration placeholders with the corresponding parameters values.
+     *
+     * @param string $string
+     */
+    protected function replaceStringPlaceholders(&$string)
+    {
+        if (is_string($string)) {
+            $string = preg_replace_callback('/%([0-9A-Za-z._-]+)%/', function ($matches) {
+                return isset($this->parameters[$matches[1]]) ? $this->parameters[$matches[1]] : null;
+            }, $string);
+        }
     }
 
     /**

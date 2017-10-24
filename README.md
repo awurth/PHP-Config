@@ -1,6 +1,6 @@
 # PHP Configuration
 
-Loads your application's configuration from PHP, YAML, XML or JSON files, and stores it in a cache file for performance.
+Loads your application's configuration from PHP, YAML or JSON files, and stores it in a cache file for performance.
 
 Uses the Symfony Config component.
 
@@ -79,6 +79,10 @@ If set to `false` (in production), the loader will read the cache file directly 
 
 ## Import files from the configuration
 You can import other files into a configuration file with the `imports` key. The `imports` array will be removed from the final configuration.
+Valid file paths are:
+- Relative paths: `../config.yml`
+- Absolute paths: `/path/to/config.yml`
+- Relative or absolute paths using [placeholders](#using-parameters): `%root_dir%/config/config.%env%.yml`
 
 ``` yaml
 # config.dev.yml
@@ -93,7 +97,7 @@ database: ...
 // config.dev.php
 return [
     'imports' => [
-        'parameters.yml', // You can import YAML / JSON / XML files from a PHP configuration file
+        'parameters.yml', // You can import YAML or JSON files from a PHP configuration file
         'config.php'
     ],
     'database' => [
@@ -201,12 +205,14 @@ $config = [
 ```
 
 ## Using PHP constants in YAML files
-You can use simple PHP constant (like `__DIR__`) or class constants (like `Monolog\Logger::DEBUG`) by using the YAML tag `!php/const:`
+You can use simple PHP constants (like `PHP_INT_MAX`) or class constants (like `Monolog\Logger::DEBUG`) by using the YAML tag `!php/const:`
 
 ``` yaml
 monolog:
     level: !php/const:Monolog\Logger::ERROR
 ```
+
+Constants like `__DIR__` and `__FILE__` don't work, use parameters instead.
 
 ## Options
 #### Imports and parameters keys
@@ -251,8 +257,7 @@ $loader = new AWurth\Config\ConfigurationLoader([
 ```
 
 # TODO
-- XML Loader
+- XML Loader?
 - Custom loaders
-- Custom imports base dir
 - Non-string parameters
 - Tests
