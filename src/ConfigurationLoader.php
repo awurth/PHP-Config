@@ -39,6 +39,11 @@ class ConfigurationLoader
     protected $loader;
 
     /**
+     * @var LoaderInterface[]
+     */
+    protected $loaders;
+
+    /**
      * @var Options
      */
     protected $options;
@@ -127,6 +132,53 @@ class ConfigurationLoader
     }
 
     /**
+     * Exports the configuration to a cache file.
+     *
+     * @param ConfigCache $cache
+     * @param array       $configuration
+     */
+    public function export(ConfigCache $cache, array $configuration)
+    {
+        $content = '<?php'.PHP_EOL.PHP_EOL.'return '.var_export($configuration, true).';'.PHP_EOL;
+
+        $cache->write($content, $this->resources);
+    }
+
+    /**
+     * Gets the file loaders.
+     *
+     * @return LoaderInterface[]
+     */
+    public function getLoaders()
+    {
+        return $this->loaders;
+    }
+
+    /**
+     * Adds a file loader.
+     *
+     * @param LoaderInterface $loader
+     *
+     * @return self
+     */
+    public function addLoader(LoaderInterface $loader)
+    {
+        $this->loaders[] = $loader;
+
+        return $this;
+    }
+
+    /**
+     * Sets the file loaders.
+     *
+     * @param LoaderInterface[] $loaders
+     */
+    public function setLoaders(array $loaders)
+    {
+        $this->loaders = $loaders;
+    }
+
+    /**
      * Gets the parameters.
      *
      * @return array
@@ -167,19 +219,6 @@ class ConfigurationLoader
     }
 
     /**
-     * Exports the configuration to a cache file.
-     *
-     * @param ConfigCache $cache
-     * @param array       $configuration
-     */
-    protected function export(ConfigCache $cache, array $configuration)
-    {
-        $content = '<?php'.PHP_EOL.PHP_EOL.'return '.var_export($configuration, true).';'.PHP_EOL;
-
-        $cache->write($content, $this->resources);
-    }
-
-    /**
      * Initializes the file loader.
      */
     protected function initLoader()
@@ -187,11 +226,11 @@ class ConfigurationLoader
         if (null === $this->loader) {
             $locator = new FileLocator();
 
-            $loaderResolver = new LoaderResolver([
-                new JsonFileLoader($locator),
-                new PhpFileLoader($locator),
-                new YamlFileLoader($locator)
-            ]);
+            $this->addLoader(new PhpFileLoader($locator));
+            $this->addLoader(new YamlFileLoader($locator));
+            $this->addLoader(new JsonFileLoader($locator));
+
+            $loaderResolver = new LoaderResolver($this->loaders);
 
             $this->loader = new DelegatingLoader($loaderResolver);
         }

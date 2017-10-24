@@ -258,6 +258,5 @@ $loader = new AWurth\Config\ConfigurationLoader([
 
 # TODO
 - XML Loader?
-- Custom loaders
 - Non-string parameters
 - Tests
