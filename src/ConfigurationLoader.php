@@ -15,7 +15,6 @@ use AWurth\Config\Loader\JsonFileLoader;
 use AWurth\Config\Loader\PhpFileLoader;
 use AWurth\Config\Loader\YamlFileLoader;
 use Symfony\Component\Config\ConfigCache;
-use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\Loader\LoaderResolver;
@@ -224,15 +223,11 @@ class ConfigurationLoader
     protected function initLoader()
     {
         if (null === $this->loader) {
-            $locator = new FileLocator();
+            $this->addLoader(new PhpFileLoader());
+            $this->addLoader(new YamlFileLoader());
+            $this->addLoader(new JsonFileLoader());
 
-            $this->addLoader(new PhpFileLoader($locator));
-            $this->addLoader(new YamlFileLoader($locator));
-            $this->addLoader(new JsonFileLoader($locator));
-
-            $loaderResolver = new LoaderResolver($this->loaders);
-
-            $this->loader = new DelegatingLoader($loaderResolver);
+            $this->loader = new DelegatingLoader(new LoaderResolver($this->loaders));
         }
     }
 

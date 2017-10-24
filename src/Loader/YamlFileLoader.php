@@ -11,7 +11,9 @@
 
 namespace AWurth\Config\Loader;
 
-use Symfony\Component\Config\Loader\FileLoader;
+use LogicException;
+use Symfony\Component\Config\Loader\Loader;
+use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -19,16 +21,22 @@ use Symfony\Component\Yaml\Yaml;
  *
  * @author Alexis Wurth <awurth.dev@gmail.com>
  */
-class YamlFileLoader extends FileLoader
+class YamlFileLoader extends Loader
 {
     /**
      * {@inheritdoc}
      */
     public function load($file, $type = null)
     {
-        $path = $this->locator->locate($file);
+        if (!file_exists($file)) {
+            throw new FileNotFoundException(sprintf('File "%s" not found.', $file));
+        }
 
-        return Yaml::parse(file_get_contents($path), Yaml::PARSE_CONSTANT | Yaml::PARSE_DATETIME | Yaml::PARSE_EXCEPTION_ON_INVALID_TYPE);
+        if (!class_exists('Symfony\Component\Yaml\Yaml')) {
+            throw new LogicException('Loading files from the YAML format requires the Symfony Yaml component.');
+        }
+
+        return Yaml::parse(file_get_contents($file), Yaml::PARSE_CONSTANT | Yaml::PARSE_DATETIME | Yaml::PARSE_EXCEPTION_ON_INVALID_TYPE);
     }
 
     /**

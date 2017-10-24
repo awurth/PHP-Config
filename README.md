@@ -1,5 +1,7 @@
 # PHP Configuration
 
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/58503b69-21c8-4121-8487-b103140c49a2/mini.png)](https://insight.sensiolabs.com/projects/58503b69-21c8-4121-8487-b103140c49a2) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/awurth/php-config/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/awurth/php-config/?branch=master)
+
 Loads your application's configuration from PHP, YAML or JSON files, and stores it in a cache file for performance.
 
 Uses the Symfony Config component.
@@ -254,6 +256,18 @@ $loader = new AWurth\Config\ConfigurationLoader([
     'enable_imports' => false,
     'enable_parameters' => false
 ]);
+```
+
+## Add custom file loaders
+You can add your custom file loaders with the `addLoader` method. The loaders must implement `Symfony\Component\Config\Loader\LoaderInterface`.
+``` php
+$loader = new AWurth\Config\ConfigurationLoader();
+
+$loader->addLoader(new XmlFileLoader());
+$loader->addLoader(new CustomFileLoader());
+
+$loader->load('path/to/xml_file.xml');
+$loader->load('path/to/file.extension');
 ```
 
 # TODO

@@ -11,23 +11,26 @@
 
 namespace AWurth\Config\Loader;
 
-use Symfony\Component\Config\Loader\FileLoader;
+use Symfony\Component\Config\Loader\Loader;
+use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 
 /**
  * PHP File Loader.
  *
  * @author Alexis Wurth <awurth.dev@gmail.com>
  */
-class PhpFileLoader extends FileLoader
+class PhpFileLoader extends Loader
 {
     /**
      * {@inheritdoc}
      */
     public function load($file, $type = null)
     {
-        $path = $this->locator->locate($file);
+        if (!file_exists($file)) {
+            throw new FileNotFoundException(sprintf('File "%s" not found.', $file));
+        }
 
-        return self::includeFile($path);
+        return self::includeFile($file);
     }
 
     /**
