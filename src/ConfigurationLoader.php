@@ -15,6 +15,7 @@ use AWurth\Config\Loader\JsonFileLoader;
 use AWurth\Config\Loader\PhpFileLoader;
 use AWurth\Config\Loader\YamlFileLoader;
 use Symfony\Component\Config\ConfigCache;
+use Symfony\Component\Config\ConfigCacheInterface;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\Loader\LoaderResolver;
@@ -27,6 +28,11 @@ use Symfony\Component\Config\Resource\FileResource;
  */
 class ConfigurationLoader
 {
+    /**
+     * @var ConfigCacheInterface
+     */
+    protected $cache;
+
     /**
      * @var array
      */
@@ -60,21 +66,18 @@ class ConfigurationLoader
     /**
      * Constructor.
      *
-     * @param Options|array $options
-     * @param array         $parameters
+     * @param string         $cachePath
+     * @param bool           $debug
      */
-    public function __construct($options = [], array $parameters = [])
+    public function __construct($cachePath = null, $debug = false)
     {
         $this->configurations = [];
         $this->resources = [];
-        $this->parameters = $parameters;
+        $this->parameters = [];
+        $this->options = new Options();
 
-        if ($options instanceof Options) {
-            $this->options = $options;
-        } elseif (is_array($options)) {
-            $this->options = new Options($options);
-        } else {
-            $this->options = new Options();
+        if (null !== $cachePath) {
+            $this->cache = new ConfigCache($cachePath, $debug);
         }
     }
 
@@ -82,23 +85,20 @@ class ConfigurationLoader
      * Loads the configuration from a cache file if it exists, or parses a configuration file if not.
      *
      * @param string $file
-     * @param string $cachePath
-     * @param bool   $debug
      *
      * @return array
      */
-    public function load($file, $cachePath = null, $debug = false)
+    public function load($file)
     {
-        if (null !== $cachePath) {
-            $cache = new ConfigCache($cachePath, $debug);
-            if (!$cache->isFresh()) {
+        if (null !== $this->cache) {
+            if (!$this->cache->isFresh()) {
                 $configuration = $this->loadFile($file);
-                $this->export($cache, $configuration);
+                $this->export($configuration);
 
                 return $configuration;
             }
 
-            return self::requireFile($cachePath);
+            return self::requireFile($this->cache->getPath());
         }
 
         return $this->loadFile($file);
@@ -133,14 +133,33 @@ class ConfigurationLoader
     /**
      * Exports the configuration to a cache file.
      *
-     * @param ConfigCache $cache
-     * @param array       $configuration
+     * @param array $configuration
      */
-    public function export(ConfigCache $cache, array $configuration)
+    public function export(array $configuration)
     {
         $content = '<?php'.PHP_EOL.PHP_EOL.'return '.var_export($configuration, true).';'.PHP_EOL;
 
-        $cache->write($content, $this->resources);
+        $this->cache->write($content, $this->resources);
+    }
+
+    /**
+     * Gets the configuration cache.
+     *
+     * @return ConfigCacheInterface
+     */
+    public function getCache()
+    {
+        return $this->cache;
+    }
+
+    /**
+     * Sets the configuration cache.
+     *
+     * @param ConfigCacheInterface $cache
+     */
+    public function setCache(ConfigCacheInterface $cache)
+    {
+        $this->cache = $cache;
     }
 
     /**
@@ -185,6 +204,21 @@ class ConfigurationLoader
     public function getParameters()
     {
         return $this->parameters;
+    }
+
+    /**
+     * Sets a parameter's value.
+     *
+     * @param string $name
+     * @param mixed  $value
+     *
+     * @return self
+     */
+    public function setParameter($name, $value)
+    {
+        $this->parameters[$name] = $value;
+
+        return $this;
     }
 
     /**

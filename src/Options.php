@@ -21,42 +21,22 @@ class Options
     /**
      * @var bool
      */
-    protected $enableImports;
+    protected $enableImports = true;
 
     /**
      * @var bool
      */
-    protected $enableParameters;
+    protected $enableParameters = true;
 
     /**
      * @var string
      */
-    protected $importsKey;
+    protected $importsKey = 'imports';
 
     /**
      * @var string
      */
-    protected $parametersKey;
-
-    /**
-     * Constructor.
-     *
-     * @param array $options
-     */
-    public function __construct(array $options = [])
-    {
-        $config = array_replace([
-            'enable_imports' => true,
-            'enable_parameters' => true,
-            'imports_key' => 'imports',
-            'parameters_key' => 'parameters'
-        ], $options);
-
-        $this->enableImports = $config['enable_imports'];
-        $this->enableParameters = $config['enable_parameters'];
-        $this->importsKey = $config['imports_key'];
-        $this->parametersKey = $config['parameters_key'];
-    }
+    protected $parametersKey = 'parameters';
 
     /**
      * Tells whether imports are enabled.
@@ -120,13 +100,13 @@ class Options
     /**
      * Sets the imports key.
      *
-     * @param string $importsKey
+     * @param string $key
      *
      * @return self
      */
-    public function setImportsKey($importsKey)
+    public function setImportsKey($key)
     {
-        $this->importsKey = $importsKey;
+        $this->importsKey = $key;
 
         return $this;
     }
@@ -144,13 +124,13 @@ class Options
     /**
      * Sets the parameters key.
      *
-     * @param string $parametersKey
+     * @param string $key
      *
      * @return self
      */
-    public function setParametersKey($parametersKey)
+    public function setParametersKey($key)
     {
-        $this->parametersKey = $parametersKey;
+        $this->parametersKey = $key;
 
         return $this;
     }

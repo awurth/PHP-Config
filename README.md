@@ -67,15 +67,15 @@ $phpConfig = $yamlConfig = $jsonConfig = [
 
 ### Using the cache (HIGHLY RECOMMENDED!)
 ``` php
-$loader = new AWurth\Config\ConfigurationLoader();
-
 $debug = 'prod' !== $environment;
 
-$config = $loader->load('path/to/config', 'path/to/cache.php', $debug);
+$loader = new AWurth\Config\ConfigurationLoader('path/to/cache.php', $debug);
+
+$config = $loader->load('path/to/config');
 ```
 **The cache file should not be versioned**, especially if you store your database credentials in it.
 
-If the third parameter (`$debug`) is set to `true`, the loader will parse the configuration files and regenerate the cache every time you edit a configuration file (including imports).
+If the second parameter (`$debug`) is set to `true`, the loader will parse the configuration files and regenerate the cache every time you edit a configuration file (including imports).
 
 If set to `false` (in production), the loader will read the cache file directly if it exists or generate it if not. The configuration won't be reloaded if you modify configuration files, so if you want to reload the cache, you have to delete the cache file.
 
@@ -177,11 +177,21 @@ your_custom_config: '%your_custom_param%'
 ```
 
 ``` php
-$loader = new AWurth\Config\ConfigurationLoader([], [
-    'root_dir' => '/path/to/project/root',
-    'environment' => 'dev',
-    'your_custom_param' => 'your_custom_value'
+$loader = new AWurth\Config\ConfigurationLoader();
+
+$loader->setParameters([
+   'root_dir' => '/path/to/project/root',
+   'environment' => 'dev',
+   'your_custom_param' => 'your_custom_value'
 ]);
+
+// OR
+
+$loader
+    ->setParameter('root_dir', '/path/to/project/root')
+    ->setParameter('environment', 'dev')
+    ->setParameter('your_custom_param', 'your_custom_value')
+;
 
 $config = $loader->load(__DIR__.'/config.yml');
 
@@ -219,10 +229,11 @@ Constants like `__DIR__` and `__FILE__` don't work, use parameters instead.
 ## Options
 #### Imports and parameters keys
 ``` php
-$loader = new AWurth\Config\ConfigurationLoader([
-    'imports_key' => 'require',
-    'parameters_key' => 'replacements'
-]);
+$loader = new AWurth\Config\ConfigurationLoader();
+
+$loader->getOptions()
+    ->setImportsKey('require')
+    ->setParametersKey('replacements');
 
 $config = $loader->load(__DIR__.'/config.yml');
 ```
@@ -247,15 +258,16 @@ database:
 ```
 
 #### Disable imports / parameters
-Imports and parameters features can be disabled by setting the `enable_imports` or `enable_parameters` options to `false`.
+Imports and parameters features can be disabled with the `setEnableImports` and `setEnableParameters` methods.
 If your configuration contains an `imports` key, it won't be removed from the final configuration.
-Nonexistent placeholders won't be replaced by `null`.
+Placeholders without corresponding parameters won't be replaced by `null`.
 
 ``` php
-$loader = new AWurth\Config\ConfigurationLoader([
-    'enable_imports' => false,
-    'enable_parameters' => false
-]);
+$loader = new AWurth\Config\ConfigurationLoader();
+
+$loader->getOptions()
+    ->setEnableImports(false)
+    ->setEnableParameters(false);
 ```
 
 ## Add custom file loaders
