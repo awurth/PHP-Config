@@ -66,8 +66,8 @@ class ConfigurationLoader
     /**
      * Constructor.
      *
-     * @param string         $cachePath
-     * @param bool           $debug
+     * @param string $cachePath
+     * @param bool   $debug
      */
     public function __construct($cachePath = null, $debug = false)
     {
@@ -397,9 +397,19 @@ class ConfigurationLoader
     protected function replaceStringPlaceholders(&$string)
     {
         if (is_string($string)) {
-            $string = preg_replace_callback('/%([0-9A-Za-z._-]+)%/', function ($matches) {
-                return isset($this->parameters[$matches[1]]) ? $this->parameters[$matches[1]] : null;
-            }, $string);
+            if (preg_match('/^%([0-9A-Za-z._-]+)%$/', $string, $matches)) {
+                if (isset($this->parameters[$matches[1]])) {
+                    $string = $this->parameters[$matches[1]];
+                }
+            } else {
+                $string = preg_replace_callback('/%([0-9A-Za-z._-]+)%/', function ($matches) {
+                    if (isset($this->parameters[$matches[1]]) && !in_array(gettype($this->parameters[$matches[1]]), ['object', 'array'])) {
+                        return $this->parameters[$matches[1]];
+                    } else {
+                        return $matches[0];
+                    }
+                }, $string);
+            }
         }
     }
 
