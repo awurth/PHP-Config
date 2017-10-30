@@ -283,6 +283,4 @@ $loader->load('path/to/file.extension');
 ```
 
 # TODO
-- XML Loader?
-- Non-string parameters
 - Tests
